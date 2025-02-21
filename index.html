@@ -45,6 +45,24 @@
       font-size: 18px;
       font-weight: bold;
     }
+    .animated-button {
+      border: none;
+      cursor: pointer;
+      transition: transform 0.3s, box-shadow 0.3s;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    .animated-button img {
+      
+      transition: transform 0.3s;
+    }
+    .animated-button:hover {
+      transform: scale(1.1);
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    }
+    .animated-button:hover img {
+      transform: scale(1.1);
+    }
   </style>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/9.4.4/math.min.js"></script>
 </head>
@@ -62,6 +80,14 @@
     <p id="result"></p>
     <p style="color: rgb(29, 249, 154); text-align: center;">Please enter percentile above 90 for accurate rank.</p>
     <p style="color: red; text-align: center;">Warning: The predictions are based on 2024 jee mains data and may not be accurate.</p>
+  </div>
+  <div class="container" style="text-align: center; margin-top: 20px;">
+    <button class="animated-button" onclick="window.location.href='https://www.collegepravesh.com/articles/jee-main-2024-rank-vs-percentile/'">
+      <img src="https://www.collegepravesh.com/cpdata/themes/sahifa/images/Logo_Light_Transparent_500x80.png" alt="Example 1">
+    </button>
+    <button class="animated-button" onclick="window.location.href='https://josaa.admissions.nic.in/applicant/SeatAllotmentResult/CurrentORCR.aspx'">
+      <img src="https://josaa.admissions.nic.in/applicant/Images/jossa_logo.png" alt="Example 2">
+    </button>
   </div>
 
   <script>
