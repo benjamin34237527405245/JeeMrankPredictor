@@ -1,0 +1,21 @@
+{
+  "name": "RaCo Predictor",
+  "short_name": "RaCo",
+  "description": "Jee mains Rank cum College predictor",
+  "start_url": "index.html",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#ffffff",
+  "icons": [
+    {
+      "src": "results16.png",
+      "sizes": "16x16",
+      "type": "image/png"
+    },
+    {
+      "src": "results.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
