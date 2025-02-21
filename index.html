@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Percentile vs Rank Predictor</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f2f2f2;
+      margin: 0;
+      padding: 0;
+    }
+    .container {
+      width: 80%;
+      max-width: 800px;
+      margin: 20px auto;
+      background: #fff;
+      padding: 20px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+      border-radius: 8px;
+    }
+    h1 {
+      text-align: center;
+      font-size: 24px;
+    }
+    .predictor {
+      margin-top: 20px;
+      text-align: center;
+    }
+    #markInput {
+      width: 120px;
+      padding: 5px;
+      font-size: 16px;
+      margin-right: 10px;
+    }
+    #predictButton {
+      background: #b991ff;
+      padding: 5px 10px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    #result {
+      margin-top: 20px;
+      text-align: center;
+      font-size: 18px;
+      font-weight: bold;
+    }
+  </style>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/9.4.4/math.min.js"></script>
+</head>
+<body>
+  <div class="container">
+    <h1>JEE Mains Percentile vs SC Rank Predictor</h1>
+    <h1>Made by Rahul Kumar</h1>
+    
+    <!-- Input section for prediction -->
+    <div class="predictor">
+      <label for="markInput">Enter your jee mains percentile:</label>
+      <input type="number" id="markInput" placeholder="e.g. 96.55">
+      <button id="predictButton">Predict Rank</button>
+    </div>
+    <p id="result"></p>
+    <p style="color: rgb(29, 249, 154); text-align: center;">Please enter percentile above 90 for accurate rank.</p>
+    <p style="color: red; text-align: center;">Warning: The predictions are based on 2024 jee mains data and may not be accurate.</p>
+  </div>
+
+  <script>
+    // Discrete dataset: each object has a mark and its corresponding rank.
+    const dataPoints = [
+      { mark: 99.98, rank:7  },
+      { mark: 99.91, rank:29 },
+      { mark: 99.50, rank:178  },
+      { mark: 99.06, rank:357  },
+      { mark: 98.16, rank:782  },
+      { mark: 97.54, rank:1135  },
+      { mark: 96.55, rank:1754  },
+      { mark: 95.56, rank:2410  },
+      { mark: 94.48, rank:3196  },
+      { mark: 93.54, rank:3944  },
+      { mark: 92.53, rank:4726  },
+      { mark: 91.47, rank:5572  },
+      { mark: 90.48, rank:6445  },
+    ];
+
+    // Function to compute polynomial regression parameters.
+    function computePolynomialRegression(data, degree) {
+      const x = data.map(point => point.mark);
+      const y = data.map(point => point.rank);
+      const n = x.length;
+      const X = [];
+      const Y = [];
+
+      for (let i = 0; i < n; i++) {
+        const row = [];
+        for (let j = 0; j <= degree; j++) {
+          row.push(Math.pow(x[i], j));
+        }
+        X.push(row);
+        Y.push([y[i]]);
+      }
+
+      const XT = math.transpose(X);
+      const XTX = math.multiply(XT, X);
+      const XTY = math.multiply(XT, Y);
+      const coefficients = math.lusolve(XTX, XTY);
+
+      return coefficients.map(c => c[0]);
+    }
+
+    const degree = 2; // You can change the degree based on your data
+    const coefficients = computePolynomialRegression(dataPoints, degree);
+
+    // Given a mark, predict the rank using the polynomial regression equation.
+    function predictPolynomialRank(mark, coefficients) {
+      return coefficients.reduce((acc, coeff, index) => acc + coeff * Math.pow(mark, index), 0);
+    }
+
+    // Update the predictRank function to use polynomial regression
+    function predictRank(mark) {
+      // Check if the exact mark exists in the dataPoints
+      const exactPoint = dataPoints.find(point => point.mark === mark);
+      if (exactPoint) {
+        return exactPoint.rank;
+      }
+      return predictPolynomialRank(mark, coefficients);
+    }
+
+    // --- Setup UI Interaction --- //
+    document.getElementById('predictButton').addEventListener('click', () => {
+      const markInput = parseFloat(document.getElementById('markInput').value);
+      if (isNaN(markInput)) {
+        document.getElementById('result').innerText = 'Please enter a valid mark.';
+        return;
+      }
+      const predictedRank = predictRank(markInput).toFixed(2);
+
+      // Find the closest data points above and below the input mark
+      const sortedDataPoints = dataPoints.sort((a, b) => a.mark - b.mark);
+      let lowerPoint = null;
+      let upperPoint = null;
+      for (let i = 0; i < sortedDataPoints.length; i++) {
+        if (sortedDataPoints[i].mark < markInput) {
+          lowerPoint = sortedDataPoints[i];
+        } else if (sortedDataPoints[i].mark > markInput && !upperPoint) {
+          upperPoint = sortedDataPoints[i];
+          break;
+        }
+      }
+
+      let resultText = `Predicted SC Rank is : ${predictedRank}`;
+      if (lowerPoint) {
+        resultText += `<br>Closest lower point: Percentile = ${lowerPoint.mark}, SC Rank = ${lowerPoint.rank}`;
+      }
+      if (upperPoint) {
+        resultText += `<br>Closest upper point: Percentile = ${upperPoint.mark}, SC Rank = ${upperPoint.rank}`;
+      }
+
+      document.getElementById('result').innerHTML = resultText;
+    });
+  </script>
+</body>
+</html>
