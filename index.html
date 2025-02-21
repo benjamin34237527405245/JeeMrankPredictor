@@ -64,6 +64,7 @@
       transform: scale(1.1);
     }
   </style>
+  <link rel="manifest" href="manifest.json">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/9.4.4/math.min.js"></script>
 </head>
 <body>
@@ -93,6 +94,7 @@
   <script>
     // Discrete dataset: each object has a mark and its corresponding rank.
     const dataPoints = [
+      { mark: 100, rank:1  },
       { mark: 99.98, rank:7  },
       { mark: 99.91, rank:29 },
       { mark: 99.50, rank:178  },
@@ -154,8 +156,8 @@
     // --- Setup UI Interaction --- //
     document.getElementById('predictButton').addEventListener('click', () => {
       const markInput = parseFloat(document.getElementById('markInput').value);
-      if (isNaN(markInput)) {
-        document.getElementById('result').innerText = 'Please enter a valid mark.';
+      if (isNaN(markInput) || markInput < 0 || markInput > 100) {
+        document.getElementById('result').innerText = 'Please enter a valid Percentile between 0 and 100.';
         return;
       }
       const predictedRank = predictRank(markInput).toFixed(2);
