@@ -53,7 +53,6 @@
       overflow: hidden;
     }
     .animated-button img {
-      
       transition: transform 0.3s;
     }
     .animated-button:hover {
@@ -89,6 +88,11 @@
     <button class="animated-button" onclick="window.open('https://josaa.admissions.nic.in/applicant/SeatAllotmentResult/CurrentORCR.aspx', '_blank')">
       <img src="https://josaa.admissions.nic.in/applicant/Images/jossa_logo.png" alt="Example 2">
     </button>
+  </div>
+ 
+  <!-- Watermark container -->
+  <div class="container" style="text-align: center; margin-top: 20px; opacity: 0.5;">
+    <p>© 2025 JEE Mains Predictor by Rahul Kumar</p>
   </div>
 
   <script>
@@ -156,14 +160,44 @@
     // --- Setup UI Interaction --- //
     document.getElementById('predictButton').addEventListener('click', () => {
       const markInput = parseFloat(document.getElementById('markInput').value);
-      if (isNaN(markInput) || markInput < 0 || markInput > 100) {
-        document.getElementById('result').innerText = 'Please enter a valid Percentile between 0 and 100.';
+      if (isNaN(markInput) || markInput < 90 || markInput > 100) {
+        document.getElementById('result').innerText = 'Please enter a valid Percentile between 90 and 100.';
         return;
       }
-      const predictedRank = predictRank(markInput).toFixed(2);
+
+      // Check if the exact mark exists in the dataPoints
+      const exactPoint = dataPoints.find(point => point.mark === markInput);
+      if (exactPoint) {
+        let resultText = `Exact SC Rank for Percentile ${markInput} is : ${exactPoint.rank}`;
+        
+        // Find the closest data points above and below the input mark
+        const sortedDataPoints = dataPoints.sort((a, b) => a.mark - b.mark); // Sort in ascending order
+        let lowerPoint = null;
+        let upperPoint = null;
+        for (let i = 0; i < sortedDataPoints.length; i++) {
+          if (sortedDataPoints[i].mark < markInput) {
+            lowerPoint = sortedDataPoints[i];
+          } else if (sortedDataPoints[i].mark > markInput && !upperPoint) {
+            upperPoint = sortedDataPoints[i];
+            break;
+          }
+        }
+
+        if (lowerPoint) {
+          resultText += `<br>Closest lower point: Percentile = ${lowerPoint.mark}, SC Rank = ${lowerPoint.rank}`;
+        }
+        if (upperPoint) {
+          resultText += `<br>Closest upper point: Percentile = ${upperPoint.mark}, SC Rank = ${upperPoint.rank}`;
+        }
+
+        document.getElementById('result').innerHTML = resultText;
+        return;
+      }
+
+      let predictedRank = predictRank(markInput).toFixed(2);
 
       // Find the closest data points above and below the input mark
-      const sortedDataPoints = dataPoints.sort((a, b) => a.mark - b.mark);
+      const sortedDataPoints = dataPoints.sort((a, b) => a.mark - b.mark); // Sort in ascending order
       let lowerPoint = null;
       let upperPoint = null;
       for (let i = 0; i < sortedDataPoints.length; i++) {
@@ -175,7 +209,20 @@
         }
       }
 
-      let resultText = `Predicted SC Rank is : ${predictedRank}`;
+      // Adjust predicted rank to be between the closest lower and upper points
+      if (lowerPoint && upperPoint) {
+        if (predictedRank < lowerPoint.rank || predictedRank > upperPoint.rank) {
+          // Interpolate rank between lowerPoint and upperPoint
+          const slope = (upperPoint.rank - lowerPoint.rank) / (upperPoint.mark - lowerPoint.mark);
+          predictedRank = lowerPoint.rank + slope * (markInput - lowerPoint.mark);
+        }
+      } else if (lowerPoint) {
+        predictedRank = Math.max(lowerPoint.rank, predictedRank);
+      } else if (upperPoint) {
+        predictedRank = Math.min(upperPoint.rank, predictedRank);
+      }
+
+      let resultText = `Predicted SC Rank is : ${predictedRank.toFixed(2)}`;
       if (lowerPoint) {
         resultText += `<br>Closest lower point: Percentile = ${lowerPoint.mark}, SC Rank = ${lowerPoint.rank}`;
       }
